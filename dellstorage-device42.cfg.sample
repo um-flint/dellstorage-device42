@@ -1,0 +1,9 @@
+[dell]
+username = admin
+password = yourpassword
+baseUri = https://dell.example.com:3033/api/rest
+
+[device42]
+username = admin
+password = yourpassword
+baseUri = https://device42.example.com
