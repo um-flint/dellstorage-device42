@@ -122,7 +122,6 @@ def main():
         for controller in controllers.json():
             controllersysdata = processController(controller)
             devicesInCluster.append(controllersysdata['name'])
-            #ports=s.get(dellUri+'/StorageCenter/ScController/'+controller['instanceId']+'/PhysicalControllerPortList')
             r=requests.post(device42Uri+'/device/',data=controllersysdata,headers=dsheaders)
             
             controlleripdata = {}
