@@ -94,6 +94,7 @@ def main():
 
     storagecenters=s.get(dellUri+'/StorageCenter/StorageCenter')
     for storagecenter in storagecenters.json():
+        devicesInCluster=[]   
         storagecentersysdata = processStorageCenter(storagecenter)
         
         #do enclosures before controllers (in case one is a controller chassis)
@@ -103,8 +104,7 @@ def main():
             enclosuresysdata = processEnclosure(enclosure)
             devicesInCluster.append(enclosure['name'])
             r=requests.post(device42Uri+'/device/',data=enclosuresysdata,headers=dsheaders)
-        
-        devicesInCluster=[]    
+         
         controllers=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/ControllerList')
         for controller in controllers.json():
             controllersysdata = processController(controller)
