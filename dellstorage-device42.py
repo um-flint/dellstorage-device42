@@ -124,9 +124,19 @@ def main():
             devicesInCluster.append(controllersysdata['name'])
             #ports=s.get(dellUri+'/StorageCenter/ScController/'+controller['instanceId']+'/PhysicalControllerPortList')
             r=requests.post(device42Uri+'/device/',data=controllersysdata,headers=dsheaders)
+            
+            controlleripdata = {}
+            controlleripdata.update({'ipaddress': controller['ipAddress']})
+            controlleripdata.update({'device': controllersysdata['name']})
+            r=requests.post(device42Uri+'/ips/',data=controlleripdata,headers=dsheaders)
         
         storagecentersysdata.update({'devices_in_cluster': ','.join(devicesInCluster)})
         r=requests.post(device42Uri+'/device/',data=storagecentersysdata,headers=dsheaders)
+        
+        storagecenteripdata = {}
+        storagecenteripdata.update({'ipaddress': storagecenter['managementIp']})
+        storagecenteripdata.update({'device': storagecentersysdata['name']})
+        r=requests.post(device42Uri+'/ips/',data=storagecenteripdata,headers=dsheaders)
         
     r=s.post(dellUri+'/ApiConnection/Logout','{}')
 
