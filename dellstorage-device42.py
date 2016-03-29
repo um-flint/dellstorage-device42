@@ -26,8 +26,8 @@ def processController(controller):
         sysdata.update({'hardware': 'Dell Storage SC4020 Controller'})
         sysdata.update({'cpucount': 1})
         sysdata.update({'cpucore': 4})
-        sysdata.update({'cpupower': 2.5})
-        sysdata.update({'memory': 16})
+        sysdata.update({'cpupower': 2500})
+        sysdata.update({'memory': 16384})
         sysdata.update({'type': 'blade'})
         sysdata.update({'blade_host': controller['scName'] + ' - Chassis'})
         sysdata.update({'slot_no': controller['canisterId']})
@@ -36,15 +36,15 @@ def processController(controller):
         sysdata.update({'hardware': 'Dell Storage SC8000 Controller'})
         sysdata.update({'cpucount': 2})
         sysdata.update({'cpucore': 6})
-        sysdata.update({'cpupower': 2.5})
+        sysdata.update({'cpupower': 2500})
         sysdata.update({'type': 'physical'})
         
         #the SC8000 base model has 16 GB of RAM, but there is a 64 GB upgrade
         #if we see more than 16 GB of RAM available assume its the 64 GB version
         if int(controller['availableMemory'].split(' ')[0]) > 16000000000:
-            sysdata.update({'memory': 64})
+            sysdata.update({'memory': 665536})
         else:
-            sysdata.update({'memory': 16})
+            sysdata.update({'memory': 16384})
             
     else:
         print 'Unknown controller model discovered'
