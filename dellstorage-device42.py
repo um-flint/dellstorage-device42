@@ -42,7 +42,7 @@ def processController(controller):
         #the SC8000 base model has 16 GB of RAM, but there is a 64 GB upgrade
         #if we see more than 16 GB of RAM available assume its the 64 GB version
         if int(controller['availableMemory'].split(' ')[0]) > 16000000000:
-            sysdata.update({'memory': 665536})
+            sysdata.update({'memory': 65536})
         else:
             sysdata.update({'memory': 16384})
             
