@@ -105,6 +105,19 @@ def main():
             enclosuresysdata = processEnclosure(enclosure)
             devicesInCluster.append(enclosure['name'])
             r=requests.post(device42Uri+'/device/',data=enclosuresysdata,headers=dsheaders)
+            diskinfo = {}
+            for disk in disks.json():
+                if int(disk['enclosureIndex']) == int(enclosure['instanceId'].split('.')[1]):
+                    try:
+                        diskinfo[int(disk['size'].split(' ')[0])/1000000000] += 1
+                    except KeyError:
+                        diskinfo[int(disk['size'].split(' ')[0])/1000000000] = 1
+            for key in diskinfo.keys():
+                disksysdata = {}
+                disksysdata.update({'name': enclosuresysdata['name']})
+                disksysdata.update({'hddsize': key})
+                disksysdata.update({'hddcount': diskinfo[key]})
+                r=requests.post(device42Uri+'/device/',data=disksysdata,headers=dsheaders)
          
         controllers=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/ControllerList')
         for controller in controllers.json():
