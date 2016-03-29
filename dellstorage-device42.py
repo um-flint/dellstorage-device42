@@ -10,7 +10,7 @@ def processStorageCenter(storagecenter):
     sysdata.update({'name': storagecenter['name']})
     sysdata.update({'manufacturer': 'Dell Inc.'})
     sysdata.update({'os': 'Storage Center'})
-    sysdata.update({'osversion': storagecenter['version']})
+    sysdata.update({'osver': storagecenter['version']})
     sysdata.update({'serial_no': storagecenter['serialNumber']})
     sysdata.update({'type': 'cluster'})
     return sysdata
@@ -21,7 +21,7 @@ def processController(controller):
     sysdata.update({'serial_no': controller['hardwareSerialNumber']})
     sysdata.update({'manufacturer': 'Dell Inc.'})
     sysdata.update({'os': 'Storage Center'})
-    sysdata.update({'osversion': controller['version']})
+    sysdata.update({'osver': controller['version']})
     
     if 'SC4020' in controller['model']:
         sysdata.update({'hardware': 'Dell Storage SC4020 Controller'})
