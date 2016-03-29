@@ -96,20 +96,23 @@ def main():
     storagecenters=s.get(dellUri+'/StorageCenter/StorageCenter')
     for storagecenter in storagecenters.json():
         storagecentersysdata = processStorageCenter(storagecenter)
-        devicesInCluster=[]
-        controllers=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/ControllerList')
-        for controller in controllers.json():
-            controllersysdata = processController(controller)
-            devicesInCluster.append(controllersysdata['name'])
-            #ports=s.get(dellUri+'/StorageCenter/ScController/'+controller['instanceId']+'/PhysicalControllerPortList')
         
+        #do enclosures before controllers (in case one is a controller chassis)
         enclosures=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/EnclosureList')
         disks=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/DiskList')
         for enclosure in enclosures.json(): 
             enclosuresysdata = processEnclosure(enclosure,disks.json())
             devicesInCluster.append(enclosure['name'])
         
+        devicesInCluster=[]    
+        controllers=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/ControllerList')
+        for controller in controllers.json():
+            controllersysdata = processController(controller)
+            devicesInCluster.append(controllersysdata['name'])
+            #ports=s.get(dellUri+'/StorageCenter/ScController/'+controller['instanceId']+'/PhysicalControllerPortList')
+        
         storagecentersysdata.update({'devices_in_cluster': ','.join(devicesInCluster)})
+        
     r=s.post(dellUri+'/ApiConnection/Logout','{}')
 
     return
