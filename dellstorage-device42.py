@@ -11,7 +11,6 @@ def processStorageCenter(storagecenter):
     sysdata.update({'manufacturer': 'Dell Inc.'})
     sysdata.update({'os': 'Storage Center'})
     sysdata.update({'osver': storagecenter['version']})
-    sysdata.update({'serial_no': storagecenter['serialNumber']})
     sysdata.update({'type': 'cluster'})
     return sysdata
     
