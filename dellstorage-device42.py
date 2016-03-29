@@ -52,26 +52,25 @@ def processController(controller):
     
     return sysdata
 
-def processEnclosure(enclosures):
-    for enclosure in enclosures:
-        sysdata = {}       
-        sysdata.update({'name': enclosure['scName'] + ' - ' + enclosure['instanceName']})
+def processEnclosure(enclosure):
+    sysdata = {}       
+    sysdata.update({'name': enclosure['scName'] + ' - ' + enclosure['instanceName']})
         
-        if 'SC4020' in enclosure['model']:
-            #This is the enclosure built into the base SC4020 chassis so needs special handling for the name
-            sysdata = {}
-            sysdata.update({'name': enclosure['scName'] + ' - Chassis'})
-            sysdata.update({'hardware': 'Dell Storage SC4020 Chassis'})
-            sysdata.update({'is_it_blade_host': 'yes'})
-        elif 'SC200' in enclosure['model']:
-            sysdata.update({'hardware': 'Dell Storage SC200 Expansion Enclosure'})
-        elif 'SC220' in enclosure['model']:
-            sysdata.update({'hardware': 'Dell Storage SC220 Expansion Enclosure'})
-        else:
-            sysdata.update({'hardware': enclosure['model']})
+    if 'SC4020' in enclosure['model']:
+        #This is the enclosure built into the base SC4020 chassis so needs special handling for the name
+        sysdata = {}
+        sysdata.update({'name': enclosure['scName'] + ' - Chassis'})
+        sysdata.update({'hardware': 'Dell Storage SC4020 Chassis'})
+        sysdata.update({'is_it_blade_host': 'yes'})
+    elif 'SC200' in enclosure['model']:
+        sysdata.update({'hardware': 'Dell Storage SC200 Expansion Enclosure'})
+    elif 'SC220' in enclosure['model']:
+        sysdata.update({'hardware': 'Dell Storage SC220 Expansion Enclosure'})
+    else:
+        sysdata.update({'hardware': enclosure['model']})
             
-        sysdata.update({'serial_no': enclosure['serviceTag']})
-        sysdata.update({'manufacturer': 'Dell Inc.'})
+    sysdata.update({'serial_no': enclosure['serviceTag']})
+    sysdata.update({'manufacturer': 'Dell Inc.'})
         
     return sysdata
 
