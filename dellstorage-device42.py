@@ -71,6 +71,7 @@ def processEnclosure(enclosure):
             
     sysdata.update({'serial_no': enclosure['serviceTag']})
     sysdata.update({'manufacturer': 'Dell Inc.'})
+    sysdata.update({'type': 'physical'})
         
     return sysdata
 
