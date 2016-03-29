@@ -29,11 +29,16 @@ def processController(controller):
         sysdata.update({'cpucore': 4})
         sysdata.update({'cpupower': 2.5})
         sysdata.update({'memory': 16})
+        sysdata.update({'type': 'blade'})
+        sysdata.update({'blade_host': controller['scName'] + ' - Chassis'})
+        sysdata.update({'slot_no': controller['canisterId']})
+        
     elif 'SC8000' in controller['model']:
         sysdata.update({'hardware': 'Dell Storage SC8000 Controller'})
         sysdata.update({'cpucount': 2})
         sysdata.update({'cpucore': 6})
         sysdata.update({'cpupower': 2.5})
+        sysdata.update({'type': 'physical'})
         
         #the SC8000 base model has 16 GB of RAM, but there is a 64 GB upgrade
         #if we see more than 16 GB of RAM available assume its the 64 GB version
@@ -51,13 +56,13 @@ def processEnclosure(enclosures):
     for enclosure in enclosures:
         sysdata = {}       
         sysdata.update({'name': enclosure['scName'] + ' - ' + enclosure['instanceName']})
-        sysdata.update({'serial_no': enclosure['serviceTag']})
-        sysdata.update({'manufacturer': 'Dell Inc.'})
         
         if 'SC4020' in enclosure['model']:
-            #This is the first enclosure built into the base SC4020 array so needs special handling
+            #This is the enclosure built into the base SC4020 chassis so needs special handling for the name
             sysdata = {}
-            sysdata.update({'serial_no': enclosure['serviceTag']})
+            sysdata.update({'name': enclosure['scName'] + ' - Chassis'})
+            sysdata.update({'hardware': 'Dell Storage SC4020 Chassis'})
+            sysdata.update({'is_it_blade_host': 'yes'})
         elif 'SC200' in enclosure['model']:
             sysdata.update({'hardware': 'Dell Storage SC200 Expansion Enclosure'})
         elif 'SC220' in enclosure['model']:
@@ -65,6 +70,9 @@ def processEnclosure(enclosures):
         else:
             sysdata.update({'hardware': enclosure['model']})
             
+        sysdata.update({'serial_no': enclosure['serviceTag']})
+        sysdata.update({'manufacturer': 'Dell Inc.'})
+        
     return sysdata
 
 def main():
