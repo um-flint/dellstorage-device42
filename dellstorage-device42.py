@@ -103,6 +103,7 @@ def main():
         for enclosure in enclosures.json(): 
             enclosuresysdata = processEnclosure(enclosure,disks.json())
             devicesInCluster.append(enclosure['name'])
+            r=requests.post(device42Uri+'/device/',data=enclosuresysdata,headers=dsheaders)
         
         devicesInCluster=[]    
         controllers=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/ControllerList')
@@ -110,8 +111,10 @@ def main():
             controllersysdata = processController(controller)
             devicesInCluster.append(controllersysdata['name'])
             #ports=s.get(dellUri+'/StorageCenter/ScController/'+controller['instanceId']+'/PhysicalControllerPortList')
+            r=requests.post(device42Uri+'/device/',data=controllersysdata,headers=dsheaders)
         
         storagecentersysdata.update({'devices_in_cluster': ','.join(devicesInCluster)})
+        r=requests.post(device42Uri+'/device/',data=storagecentersysdata,headers=dsheaders)
         
     r=s.post(dellUri+'/ApiConnection/Logout','{}')
 
