@@ -103,7 +103,7 @@ def main():
         disks=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/DiskList')
         for enclosure in enclosures.json(): 
             enclosuresysdata = processEnclosure(enclosure)
-            devicesInCluster.append(enclosure['name'])
+            devicesInCluster.append(enclosuresysdata['name'])
             r=requests.post(device42Uri+'/device/',data=enclosuresysdata,headers=dsheaders)
             diskinfo = {}
             for disk in disks.json():
