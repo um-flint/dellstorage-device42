@@ -104,6 +104,7 @@ def main():
             enclosuresysdata = processEnclosure(enclosure)
             devicesInCluster.append(enclosuresysdata['name'])
             r=requests.post(device42Uri+'/device/',data=enclosuresysdata,headers=dsheaders)
+            print r
             diskinfo = {}
             for disk in disks.json():
                 if int(disk['enclosureIndex']) == int(enclosure['instanceId'].split('.')[1]):
