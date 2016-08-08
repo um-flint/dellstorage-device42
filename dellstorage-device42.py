@@ -100,24 +100,29 @@ def main():
         #do enclosures before controllers (in case one is a controller chassis)
         enclosures=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/EnclosureList')
         disks=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/DiskList')
-        for enclosure in enclosures.json(): 
-            enclosuresysdata = processEnclosure(enclosure)
-            devicesInCluster.append(enclosuresysdata['name'])
-            r=requests.post(device42Uri+'/device/',data=enclosuresysdata,headers=dsheaders)
-            print r
-            diskinfo = {}
-            for disk in disks.json():
-                if int(disk['enclosureIndex']) == int(enclosure['instanceId'].split('.')[1]):
-                    try:
-                        diskinfo[int(disk['size'].split(' ')[0])/1000000000] += 1
-                    except KeyError:
-                        diskinfo[int(disk['size'].split(' ')[0])/1000000000] = 1
-            for key in diskinfo.keys():
-                disksysdata = {}
-                disksysdata.update({'name': enclosuresysdata['name']})
-                disksysdata.update({'hddsize': key})
-                disksysdata.update({'hddcount': diskinfo[key]})
-                r=requests.post(device42Uri+'/device/',data=disksysdata,headers=dsheaders)
+
+        if enclosures.status_code == 200:
+            for enclosure in enclosures.json(): 
+                enclosuresysdata = processEnclosure(enclosure)
+                devicesInCluster.append(enclosuresysdata['name'])
+                r=requests.post(device42Uri+'/device/',data=enclosuresysdata,headers=dsheaders)
+                print r
+                diskinfo = {}
+                for disk in disks.json():
+                    if int(disk['enclosureIndex']) == int(enclosure['instanceId'].split('.')[1]):
+                        try:
+                            diskinfo[int(disk['size'].split(' ')[0])/1000000000] += 1
+                        except KeyError:
+                            diskinfo[int(disk['size'].split(' ')[0])/1000000000] = 1
+                for key in diskinfo.keys():
+                    disksysdata = {}
+                    disksysdata.update({'name': enclosuresysdata['name']})
+                    disksysdata.update({'hddsize': key})
+                    disksysdata.update({'hddcount': diskinfo[key]})
+                    r=requests.post(device42Uri+'/device/',data=disksysdata,headers=dsheaders)
+        else:
+            print 'Error getting enclosures - Response Code ' + str(enclosures.status_code)
+            print enclosures.text
          
         controllers=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/ControllerList')
         for controller in controllers.json():
