@@ -74,6 +74,31 @@ def processEnclosure(enclosure):
         
     return sysdata
 
+def processDisk(disk,enclosureName,diskspeed):
+    diskdata = {}
+    diskdata.update({'type': 'Hard Disk'})
+    diskdata.update({'name': disk['product']})
+    diskdata.update({'modelno': disk['product']})
+    diskdata.update({'serial_no': disk['serialNumber']})
+    if 'GB' in disk['manufacturerCapacity']:
+        diskdata.update({'hddsize': disk['manufacturerCapacity'].split(' ')[0]})
+    if 'TB' in disk['manufacturerCapacity']:
+        diskdata.update({'hddsize': float(disk['manufacturerCapacity'].split(' ')[0]) * 1000})
+
+    #character limit for hard disk rpm is 8
+    if diskspeed == 'Read-Intensive SSD':
+        diskspeed = 'RI SSD'
+    elif diskspeed == 'Write-Intensive SSD':
+        diskspeed = 'WI SSD'
+
+    diskdata.update({'hddrpm': diskspeed})
+    diskdata.update({'firmware': disk['revision']})
+    diskdata.update({'assignment': 'device'})
+    diskdata.update({'manufacturer': disk['vendor']})
+    diskdata.update({'device': enclosureName})
+
+    return diskdata
+
 def main():
     config = ConfigParser.ConfigParser()
     config.readfp(open('dellstorage-device42.cfg'))
@@ -98,28 +123,31 @@ def main():
         storagecentersysdata = processStorageCenter(storagecenter)
         
         #do enclosures before controllers (in case one is a controller chassis)
-        enclosures=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/EnclosureList')
-        disks=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/DiskList')
+        try:
+            enclosures=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/EnclosureList')
+            disks=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/DiskConfigurationList')
+            disktiers=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/DiskFolderTierList')
+        except Exception as err:
+            print err
 
         if enclosures.status_code == 200:
             for enclosure in enclosures.json(): 
                 enclosuresysdata = processEnclosure(enclosure)
                 devicesInCluster.append(enclosuresysdata['name'])
                 r=requests.post(device42Uri+'/device/',data=enclosuresysdata,headers=dsheaders)
-                print r
-                diskinfo = {}
+                #print r
+
                 for disk in disks.json():
-                    if int(disk['enclosureIndex']) == int(enclosure['instanceId'].split('.')[1]):
-                        try:
-                            diskinfo[int(disk['size'].split(' ')[0])/1000000000] += 1
-                        except KeyError:
-                            diskinfo[int(disk['size'].split(' ')[0])/1000000000] = 1
-                for key in diskinfo.keys():
-                    disksysdata = {}
-                    disksysdata.update({'name': enclosuresysdata['name']})
-                    disksysdata.update({'hddsize': key})
-                    disksysdata.update({'hddcount': diskinfo[key]})
-                    r=requests.post(device42Uri+'/device/',data=disksysdata,headers=dsheaders)
+                    #print json.dumps(disk, sort_keys=True, indent=4)
+                    if enclosure['instanceName'] == disk['enclosureName']:
+                        for disktier in disktiers.json():
+                            if disk['diskTier'] == disktier['diskTier']:
+                                diskspeed = disktier['availableDiskClasses'][0]
+
+                        diskdata = processDisk(disk,enclosuresysdata['name'],diskspeed)
+                        r=requests.post(device42Uri+'/parts/',data=diskdata,headers=dsheaders)
+                        #print r
+                        #print r.text
         else:
             print 'Error getting enclosures - Response Code ' + str(enclosures.status_code)
             print enclosures.text
