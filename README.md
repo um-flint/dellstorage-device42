@@ -2,4 +2,8 @@ This code will read storage array info from Dell Storage Enterprise Manager usin
 
 It can be run with './dellstorage-device42.py' and expects a config file in the same directory named 'dellstorage-device42.cfg'
 
-Tested with Python 2.7 and Dell Storage Enterprise Manager 2015 R3
+Written with Python 2.7
+
+Tested against:
+* Dell Storage Enterprise Manager 2015 R3
+* Dell Storage Manger 2016 R3
