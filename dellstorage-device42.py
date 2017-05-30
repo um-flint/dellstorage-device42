@@ -5,6 +5,7 @@ import json
 import base64
 import ConfigParser
 
+#process Storage Center info from DSM and convert to Device42 Format
 def processStorageCenter(storagecenter):
     sysdata = {}
     sysdata.update({'name': storagecenter['name']})
@@ -14,6 +15,7 @@ def processStorageCenter(storagecenter):
     sysdata.update({'type': 'cluster'})
     return sysdata
     
+#process Storage Center Controller info from DSM and convert to Device42 Format
 def processController(controller):
     sysdata = {}
     sysdata.update({'name': controller['domainName']})
@@ -45,18 +47,20 @@ def processController(controller):
             sysdata.update({'memory': 65536})
         else:
             sysdata.update({'memory': 16384})
-            
+
+    #Other models exist but these are the only ones I have available to play with   
     else:
         print 'Unknown controller model discovered'
     
     return sysdata
 
+#process Storage Center Disk Tray info from DSM and convert to Device42 Format
 def processEnclosure(enclosure):
     sysdata = {}       
     sysdata.update({'name': enclosure['scName'] + ' - ' + enclosure['instanceName']})
         
+    #This is the enclosure built into the base SC4020 chassis so needs special handling for the name
     if 'SC4020' in enclosure['model']:
-        #This is the enclosure built into the base SC4020 chassis so needs special handling for the name
         sysdata = {}
         sysdata.update({'name': enclosure['scName'] + ' - Chassis'})
         sysdata.update({'hardware': 'Dell Storage SC4020 Chassis'})
@@ -74,6 +78,7 @@ def processEnclosure(enclosure):
         
     return sysdata
 
+#process Storage Center Disk info from DSM and convert to Device42 Format
 def processDisk(disk,enclosureName,diskspeed):
     diskdata = {}
     diskdata.update({'type': 'Hard Disk'})
@@ -100,6 +105,7 @@ def processDisk(disk,enclosureName,diskspeed):
     return diskdata
 
 def main():
+    #parse the config file
     config = ConfigParser.ConfigParser()
     config.readfp(open('dellstorage-device42.cfg'))
     dellusername = config.get('dell','username')
@@ -108,21 +114,23 @@ def main():
     d42username = config.get('device42','username')
     d42password = config.get('device42','password')
     device42Uri = config.get('device42','baseUri')
+
     dsheaders = {'Authorization': 'Basic ' + base64.b64encode(d42username + ':' + d42password), 'Content-Type': 'application/x-www-form-urlencoded'}
 
+    #Start a session with Dell Storage Manager
     s=requests.Session()
     s.headers.update({'Accept': 'application/json', 'Content-Type': 'application/json', 'x-dell-api-version': '2.2'})
     s.verify=False #disable once we get a real cert
-
     dellauth = {'Authorization': 'Basic ' + base64.b64encode(dellusername + ':' + dellpassword), 'Content-Type': 'application/json', 'x-dell-api-version': '2.2'}
     r=s.post(dellUri+'/ApiConnection/Login','{}',headers=dellauth)
 
+    #Loop through all available Storage Centers and push as much info as possible to Device42
     storagecenters=s.get(dellUri+'/StorageCenter/StorageCenter')
     for storagecenter in storagecenters.json():
         devicesInCluster=[]   
         storagecentersysdata = processStorageCenter(storagecenter)
         
-        #do enclosures before controllers (in case one is a controller chassis)
+        #do enclosures before controllers in case one is a controller chassis (e.g SC4020)
         try:
             enclosures=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/EnclosureList')
             disks=s.get(dellUri+'/StorageCenter/StorageCenter/'+storagecenter['instanceId']+'/DiskConfigurationList')
@@ -171,6 +179,7 @@ def main():
         storagecenteripdata.update({'device': storagecentersysdata['name']})
         r=requests.post(device42Uri+'/ips/',data=storagecenteripdata,headers=dsheaders)
         
+    #Log off Dell Storage Manager
     r=s.post(dellUri+'/ApiConnection/Logout','{}')
 
     return
